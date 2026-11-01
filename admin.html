@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Prista Store</title>
+  <style>
+    :root {
+      --brown-900:#241610;
+      --brown-800:#332116;
+      --brown-700:#4A3020;
+      --brown-600:#6B4630;
+      --brown-500:#8B5E3C;
+      --brown-300:#D3B08C;
+      --brown-200:#EAD9C5;
+      --brown-100:#F6EDE3;
+      --cream:#FDF9F4;
+      --accent:#C0803C;
+      --green:#4E7A4E;
+      --red:#A33A2E;
+      --shadow: 0 12px 30px rgba(56,35,22,.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(180deg, #f8f1ea, #fdfaf6);
+      color: var(--brown-900);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 18px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2vw, 2.2rem);
+      color: var(--brown-800);
+    }
+
+    .title p {
+      margin: 6px 0 0;
+      color: var(--brown-500);
+      font-size: .92rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      font: inherit;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-weight: 700;
+      transition: .2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(145deg, var(--brown-600), var(--brown-800));
+      color: #fff;
+      box-shadow: 0 10px 26px rgba(74,48,32,.22);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--brown-700);
+      border: 1.5px solid var(--brown-200);
+    }
+
+    .btn-danger {
+      background: #fff1ef;
+      border: 1px solid #f5d6d2;
+      color: var(--red);
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--brown-200);
+      border-radius: 18px;
+      padding: 18px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card small {
+      display: block;
+      color: var(--brown-500);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 8px;
+    }
+
+    .card strong {
+      font-size: clamp(1.25rem, 2vw, 1.8rem);
+      color: var(--brown-800);
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--brown-200);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--brown-200);
+      flex-wrap: wrap;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--brown-800);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--brown-200);
+      text-align: left;
+      vertical-align: top;
+      font-size: .86rem;
+      color: var(--brown-700);
+    }
+
+    th {
+      background: #f8f0e8;
+      color: var(--brown-800);
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .75px;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .status {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    .paid { background:#eaf2ea; color:var(--green); }
+    .pending { background:#fbf0e0; color:var(--accent); }
+    .cancel { background:#fbeae8; color:var(--red); }
+
+    .empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--brown-500);
+      font-size: .95rem;
+    }
+
+    @media (max-width: 700px) {
+      .summary { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+      .topbar { align-items: flex-start; }
+    }
+
+    @media (max-width: 480px) {
+      .container { padding-left: 12px; padding-right: 12px; }
+      .summary { grid-template-columns: 1fr; }
+      .actions { width: 100%; }
+      .actions button { flex: 1; }
+      .panel-head { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="title">
+        <h1>Admin Prista Store</h1>
+        <p>Data pembeli & riwayat pesanan</p>
+      </div>
+      <div class="actions">
+        <button class="btn-secondary" onclick="location.href='index.html'">← Kembali ke Web</button>
+        <button class="btn-primary" id="refreshBtn">Refresh Data</button>
+        <button class="btn-secondary" id="exportBtn">Export CSV</button>
+        <button class="btn-danger" id="clearBtn">Hapus Riwayat</button>
+        <button class="btn-secondary" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="summary" id="summaryCards"></div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Daftar Pembeli</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>No. Pesanan</th>
+              <th>Nama</th>
+              <th>WhatsApp</th>
+              <th>Jenis</th>
+              <th>Pembayaran</th>
+              <th>Status</th>
+              <th>Total</th>
+              <th>Waktu</th>
+              <th>Item</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LS_KEY = 'kopiNusantara.orders.v1';
+
+    const isLoggedIn = localStorage.getItem('pristaAdminLoggedIn') === 'true';
+    if (!isLoggedIn) {
+      window.location.href = 'login.html';
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem('pristaAdminLoggedIn');
+      localStorage.removeItem('pristaAdminName');
+      window.location.href = 'login.html';
+    }
+
+    function rupiah(value) {
+      return 'Rp ' + Number(value || 0).toLocaleString('id-ID');
+    }
+
+    function loadOrders() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveOrders(orders) {
+      localStorage.setItem(LS_KEY, JSON.stringify(orders));
+    }
+
+    function statusClass(status) {
+      if (status === 'Dibayar' || status === 'Lunas') return 'paid';
+      if (status === 'Kedaluwarsa' || status === 'Dibatalkan') return 'cancel';
+      return 'pending';
+    }
+
+    function renderSummary(orders) {
+      const totalRevenue = orders
+        .filter(o => o.status !== 'Kedaluwarsa' && o.status !== 'Dibatalkan')
+        .reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+      const totalQris = orders
+        .filter(o => o.payment === 'QRIS' && (o.status === 'Dibayar' || o.status === 'Lunas'))
+        .reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+      const totalCash = orders
+        .filter(o => o.payment === 'Tunai' && (o.status === 'Belum Dibayar' || o.status === 'Lunas' || o.status === 'Dibayar'))
+        .reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+      const cards = `
+        <div class="card">
+          <small>Total Revenue</small>
+          <strong>${rupiah(totalRevenue)}</strong>
+        </div>
+        <div class="card">
+          <small>QRIS</small>
+          <strong>${rupiah(totalQris)}</strong>
+        </div>
+        <div class="card">
+          <small>Tunai</small>
+          <strong>${rupiah(totalCash)}</strong>
+        </div>
+        <div class="card">
+          <small>Jumlah Order</small>
+          <strong>${orders.length}</strong>
+        </div>
+      `;
+
+      document.getElementById('summaryCards').innerHTML = cards;
+    }
+
+    function renderTable() {
+      const orders = loadOrders();
+      renderSummary(orders);
+      const tbody = document.getElementById('ordersTable');
+
+      if (!orders.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="empty">Belum ada data pembeli. Pesanan akan muncul di sini.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = orders.map(order => {
+        const items = order.items?.map(item => `${item.qty}x ${item.name}`).join(', ') || '-';
+        const date = new Date(order.date || Date.now()).toLocaleString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        return `
+          <tr>
+            <td><strong>${order.id}</strong></td>
+            <td>${order.customer?.name || '-'}</td>
+            <td>${order.customer?.phone || '-'}</td>
+            <td>${order.customer?.type || '-'}</td>
+            <td>${order.payment || '-'}</td>
+            <td><span class="status ${statusClass(order.status)}">${order.status || 'Pending'}</span></td>
+            <td>${rupiah(order.total)}</td>
+            <td>${date}</td>
+            <td>${items}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportCsv() {
+      const orders = loadOrders();
+      if (!orders.length) {
+        alert('Belum ada data untuk diexport.');
+        return;
+      }
+
+      const header = ['No. Pesanan', 'Nama', 'WhatsApp', 'Tipe', 'Pembayaran', 'Status', 'Total', 'Waktu'];
+      const rows = orders.map(order => [
+        order.id,
+        order.customer?.name || '',
+        order.customer?.phone || '',
+        order.customer?.type || '',
+        order.payment || '',
+        order.status || '',
+        order.total || 0,
+        new Date(order.date || Date.now()).toLocaleString('id-ID')
+      ]);
+
+      const csvContent = [header, ...rows]
+        .map(row => row.map(value => '"' + String(value).replace(/"/g, '""') + '"').join(',')).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'data-pembeli-prista.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearHistory() {
+      const orders = loadOrders();
+      if (!orders.length) {
+        alert('Belum ada riwayat untuk dihapus.');
+        return;
+      }
+
+      const yakin = confirm('Apakah Anda yakin ingin menghapus semua riwayat pesanan?');
+      if (!yakin) return;
+
+      localStorage.removeItem(LS_KEY);
+      renderTable();
+      alert('Riwayat pesanan berhasil dihapus.');
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', renderTable);
+    document.getElementById('exportBtn').addEventListener('click', exportCsv);
+    document.getElementById('clearBtn').addEventListener('click', clearHistory);
+    document.getElementById('logoutBtn').addEventListener('click', logoutAdmin);
+
+    renderTable();
+  </script>
+</body>
+</html>

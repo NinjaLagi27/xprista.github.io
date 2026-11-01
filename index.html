@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prista Food Store</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="style.css" type="text/css" media="all" />
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="container header-inner">
+    <div class="brand">
+      <div class="brand-logo"><img src="aset/kol daging.jpg" alt="Logo Prista Store"></div>
+      <div>
+        <h1>Prista Store</h1>
+        <span>Food &amp; Smoothies</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="btn-ghost" id="btnOrders">📋 <span>Pesanan</span></button>
+      <a href="login.html" class="btn-ghost" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">👨‍💼 <span>Admin</span></a>
+      <button class="btn-cart" id="btnCart">🛒 <span>Keranjang</span> <span class="badge" id="cartBadge">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <span class="pill">Pesan Online · QRIS &amp; Tunai</span>
+      <h2>Awali harimu dengan<br><em>Sarapan di Prista Store.</em></h2>
+      <p>Pilih menu favoritmu, pesan langsung dari web, lalu jangan lupa bayar.</p>
+      <a href="#menu" class="btn-primary">Lihat Menu </a>
+    </div>
+    <div class="hero-art"><img src="aset/dino.svg" alt="Dinosaurus"></div>
+  </div>
+</section>
+
+<!-- ================= MENU ================= -->
+<section class="section" id="menu">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2>Menu Kami</h2>
+        <p>Bahan pilihan, diracik segar setiap hari</p>
+      </div>
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="grid" id="productGrid"></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    © 2026 Prista Store · Jl. Tugu Utara No. 1, Malang · Buka 08.00–11.00
+  </div>
+</footer>
+
+<!-- ================= MODAL: KERANJANG ================= -->
+<div class="backdrop" id="modalCart">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>🛒 Keranjang Pesanan</h3>
+      <button class="close-btn" data-close="modalCart">✕</button>
+    </div>
+    <div class="modal-body" id="cartBody"></div>
+    <div class="modal-foot" id="cartFoot"></div>
+  </div>
+</div>
+
+<!-- ================= MODAL: CHECKOUT ================= -->
+<div class="backdrop" id="modalCheckout">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📝 Data Pesanan</h3>
+      <button class="close-btn" data-close="modalCheckout">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="checkoutForm">
+        <div class="field">
+          <label>Nama Lengkap *</label>
+          <input type="text" id="fName" placeholder="Contoh: Andi Pratama" required>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>No. WhatsApp *</label>
+            <input type="tel" id="fPhone" placeholder="0812xxxxxxx" required>
+          </div>
+          <div class="field">
+            <label>Tipe Pesanan</label>
+            <select id="fType">
+              <option>Dine In (Makan di Tempat)</option>
+              <option>Take Away</option>
+              <option>Delivery</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label id="lblNote">No. Meja / Catatan</label>
+          <textarea id="fNote" placeholder="Contoh: Meja 04, es batu sedikit"></textarea>
+        </div>
+
+        <label style="display:block;font-size:.79rem;font-weight:700;color:var(--brown-700);margin:20px 0 8px;letter-spacing:.3px">
+          METODE PEMBAYARAN
+        </label>
+        <div class="pay-options">
+          <button type="button" class="pay-opt active" data-pay="qris">
+            <span class="ico">📱</span>
+            <strong>QRIS</strong>
+            <small>GoPay, OVO, DANA, ShopeePay, LinkAja &amp; m-banking</small>
+          </button>
+          <button type="button" class="pay-opt" data-pay="cash">
+            <span class="ico">💵</span>
+            <strong>Tunai / Cash</strong>
+            <small>Bayar langsung di kasir saat ambil pesanan</small>
+          </button>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <div class="total-row" style="padding:0 0 4px">
+        <span>Total Bayar</span>
+        <span id="coTotal">Rp 0</span>
+      </div>
+      <button class="btn-submit" id="btnPay">Lanjutkan Pembayaran</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: QRIS ================= -->
+<div class="backdrop" id="modalQris">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📱 Pembayaran QRIS</h3>
+      <button class="close-btn" data-close="modalQris">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="qris-box">
+        <div class="qris-brand">▦ QRIS</div>
+        <div class="qr-frame" id="qrFrame">
+          <img id="qrImage" src="aset/qris.jpeg" alt="QRIS Code" style="width:210px;height:210px;display:block;">
+          <div id="qrLoading" style="display:none;width:210px;height:210px;place-items:center;color:#8B5E3C;font-size:.85rem">
+            Memuat QR...
+          </div>
+        </div>
+        <div class="amount" id="qrisAmount">Rp 0</div>
+        <div class="qris-note">Kopi Nusantara · NMID: ID2024<span id="qrisMid">000000</span></div>
+        <div class="timer" id="qrisTimer">⏱ Sisa waktu 05:00</div>
+
+        <ul class="steps">
+          <li>Buka aplikasi e-wallet / m-banking kamu</li>
+          <li>Pilih menu <b>Scan QRIS</b></li>
+          <li>Arahkan kamera ke kode QR di atas</li>
+          <li>Periksa nominal lalu konfirmasi pembayaran</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-submit" id="btnConfirmQris">✅ Saya Sudah Bayar</button>
+      <button class="btn-secondary" data-close="modalQris">Bayar Nanti</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: SUKSES ================= -->
+<div class="backdrop" id="modalSuccess">
+  <div class="modal">
+    <div class="modal-body">
+      <div class="success">
+        <div class="check" id="succIcon">✓</div>
+        <h3 id="succTitle">Pesanan Berhasil!</h3>
+        <p id="succMsg">Terima kasih, pesananmu sedang kami siapkan.</p>
+        <div class="receipt" id="succReceipt"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-submit" data-close="modalSuccess">Selesai</button>
+      <button class="btn-secondary" id="btnSeeOrders">Lihat Daftar Pesanan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: PESANAN ================= -->
+<div class="backdrop" id="modalOrders">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📋 Daftar Pesanan</h3>
+      <button class="close-btn" data-close="modalOrders">✕</button>
+    </div>
+    <div class="modal-body" id="ordersBody"></div>
+    <div class="modal-foot" id="ordersFoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   DATA PRODUK
+   ========================================================= */
+const PRODUCTS = [
+  { id:1, name:'Nasi Tumis ayam kol (hot)', price:15000, cat:'Food',      image:'aset/kol daging.jpg', desc:'Nasi,tumis kol pedas '},
+  { id:2, name:'Nasi Tumis ayam kol (biasa)',    price:15000, cat:'Food',      image:'aset/kol daging.jpg', desc:'Nasi,Tumis kol non pedas' },
+  { id:3, name:'Smoothies Mix Flav',   price:15000, cat:'Non-Kopi',      image:'aset/kol daging.jpg', desc:'Pisang, Buah naga, Alpukat, Strawberry, Mangga '},
+  { id:4, name:'Smoothies Banana Manggo',   price:15000, cat:'Kopi',      image:'aset/gedang pencit.jpg', desc:'Pisang dan Mangga' },
+  { id:5, name:'Smoothies Strawberry Manggo',        price:15000, cat:'Non-Kopi',  image:'aset/pencit nogo.jpg', desc:'Strawberry dan Mangga' },
+  { id:6, name:'Smoothies Banana Dragon Fruit',       price:15000, cat:'Non-Kopi',  image:'aset/nogo gedang.jpg', desc:'Pisang dan Alpukat' },
+   { id:7, name:'Smoothies Manggo',       price:15000, cat:'Non-Kopi',  image:'aset/pencit.jpg', desc:'Mangga'}
+   ]
+
+const CATS = ['Semua','Food','Smoothies'];
+const LS_KEY = 'kopiNusantara.orders.v1';
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let cart = {};               // { productId: qty }
+let orders = [];             // array of order objects
+let activeFilter = 'Semua';
+let selectedPayment = 'qris';
+let pendingOrder = null;     // order menunggu konfirmasi QRIS
+let qrisInterval = null;
+let qrisLeft = 300;          // detik
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const rupiah = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+
+function openModal(id){
+  $(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id){
+  $(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+function closeAllModals(){
+  document.querySelectorAll('.backdrop.show').forEach(b => b.classList.remove('show'));
+  document.body.style.overflow = '';
+}
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function genOrderId(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  return 'BRW-' + pad(d.getDate()) + pad(d.getMonth()+1) + '-' +
+         String(Math.floor(Math.random()*9000)+1000);
+}
+
+function cartCount(){
+  return Object.values(cart).reduce((a,b) => a+b, 0);
+}
+function cartTotal(){
+  return Object.entries(cart).reduce((sum,[id,qty]) => {
+    const p = PRODUCTS.find(x => x.id == id);
+    return sum + (p ? p.price * qty : 0);
+  }, 0);
+}
+
+/* =========================================================
+   RENDER: PRODUK
+   ========================================================= */
+function renderFilters(){
+  $('filters').innerHTML = CATS.map(c =>
+    `<button class="chip ${c === activeFilter ? 'active' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+}
+
+function renderProducts(){
+  const list = PRODUCTS.filter(p => activeFilter === 'Semua' || p.cat === activeFilter);
+  $('productGrid').innerHTML = list.map(p => `
+    <article class="card">
+      <div class="card-img"><img src="${p.image}" alt="${p.name}"></div>
+      <div class="card-body">
+        <h3>${p.name}</h3>
+        <p>${p.desc}</p>
+        <div class="card-foot">
+          <span class="price">${rupiah(p.price)}</span>
+          <button class="btn-add" data-add="${p.id}">+ Tambah</button>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+
+/* =========================================================
+   CART
+   ========================================================= */
+function addToCart(id){
+  cart[id] = (cart[id] || 0) + 1;
+  updateCartUI();
+  const p = PRODUCTS.find(x => x.id == id);
+  toast(`${p.name} ditambahkan ✓`);
+}
+
+function changeQty(id, delta){
+  cart[id] = (cart[id] || 0) + delta;
+  if (cart[id] <= 0) delete cart[id];
+  updateCartUI();
+}
+
+function removeItem(id){
+  delete cart[id];
+  updateCartUI();
+}
+
+function updateCartUI(){
+  const count = cartCount();
+  $('cartBadge').textContent = count;
+  $('cartBadge').style.display = count ? 'grid' : 'none';
+  renderCart();
+}
+
+function renderCart(){
+  const body = $('cartBody');
+  const foot = $('cartFoot');
+  const entries = Object.entries(cart);
+
+  if (!entries.length){
+    body.innerHTML = `
+      <div class="empty">
+        <span class="ico">🛒</span>
+        <p>Keranjangmu masih kosong.<br>Yuk pilih menu favoritmu dulu!</p>
+      </div>`;
+    foot.innerHTML = `<button class="btn-secondary" data-close="modalCart">Tutup</button>`;
+    return;
+  }
+
+  body.innerHTML = entries.map(([id, qty]) => {
+    const p = PRODUCTS.find(x => x.id == id);
+    return `
+      <div class="cart-item">
+        <div class="ci-thumb"><img src="${p.image}" alt="${p.name}"></div>
+        <div class="ci-info">
+          <h4>${p.name}</h4>
+          <span>${rupiah(p.price)} × ${qty} = <b>${rupiah(p.price*qty)}</b></span>
+        </div>
+        <div class="qty">
+          <button data-minus="${id}">−</button>
+          <span>${qty}</span>
+          <button data-plus="${id}">+</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  foot.innerHTML = `
+    <div class="total-row">
+      <span>Total <small>(${cartCount()} item)</small></span>
+      <span>${rupiah(cartTotal())}</span>
+    </div>
+    <button class="btn-submit" id="btnCheckout">Lanjut Isi Data →</button>
+    <button class="btn-secondary" data-close="modalCart">Tambah Menu Lagi</button>`;
+}
+
+/* =========================================================
+   CHECKOUT
+   ========================================================= */
+function openCheckout(){
+  if (!cartCount()){ toast('Keranjang masih kosong'); return; }
+  closeModal('modalCart');
+  $('coTotal').textContent = rupiah(cartTotal());
+  openModal('modalCheckout');
+}
+
+function selectPayment(method){
+  selectedPayment = method;
+  document.querySelectorAll('.pay-opt').forEach(b =>
+    b.classList.toggle('active', b.dataset.pay === method)
+  );
+  const lbl = $('btnPay');
+  lbl.textContent = method === 'qris' ? 'Tampilkan QRIS →' : 'Konfirmasi Pesanan Tunai →';
+}
+
+function validateForm(){
+  const name = $('fName').value.trim();
+  const phone = $('fPhone').value.trim();
+  if (name.length < 2){ toast('Nama minimal 2 karakter'); $('fName').focus(); return false; }
+  if (phone.length < 8 || !/^[0-9+\-\s]+$/.test(phone)){ toast('Nomor WhatsApp tidak valid'); $('fPhone').focus(); return false; }
+  return true;
+}
+
+function buildOrder(payment, status){
+  const items = Object.entries(cart).map(([id, qty]) => {
+    const p = PRODUCTS.find(x => x.id == id);
+    return { name:p.name, price:p.price, qty, subtotal:p.price*qty };
+  });
+  return {
+    id: genOrderId(),
+    date: new Date().toISOString(),
+    customer: {
+      name: $('fName').value.trim(),
+      phone: $('fPhone').value.trim(),
+      type: $('fType').value,
+      note: $('fNote').value.trim()
+    },
+    items,
+    total: items.reduce((s,i) => s + i.subtotal, 0),
+    payment,
+    status
+  };
+}
+
+/* =========================================================
+   PROSES PEMBAYARAN
+   ========================================================= */
+function processPayment(){
+  if (!validateForm()) return;
+
+  if (selectedPayment === 'qris'){
+    pendingOrder = buildOrder('QRIS', 'Menunggu Pembayaran');
+    closeModal('modalCheckout');
+    showQris(pendingOrder);
+  } else {
+    // CASH → langsung tercatat, bayar di kasir
+    const order = buildOrder('Tunai', 'Belum Dibayar');
+    orders.unshift(order);
+    saveOrders();
+    cart = {};
+    updateCartUI();
+    closeModal('modalCheckout');
+    showSuccess(order, true);
+  }
+}
+
+function showQris(order){
+  $('qrisAmount').textContent = rupiah(order.total);
+  $('qrisMid').textContent = order.id.replace(/\D/g,'').slice(-6);
+
+  const qrImage = $('qrImage');
+  const qrLoading = $('qrLoading');
+  qrImage.src = 'aset/qris.jpeg';
+  qrImage.style.display = 'block';
+  qrLoading.style.display = 'none';
+
+  clearInterval(qrisInterval);
+  qrisLeft = 300;
+  updateQrisTimer();
+  qrisInterval = setInterval(() => {
+    qrisLeft--;
+    updateQrisTimer();
+    if (qrisLeft <= 0){
+      clearInterval(qrisInterval);
+      expireQris();
+    }
+  }, 1000);
+
+  openModal('modalQris');
+}
+
+function updateQrisTimer(){
+  const el = $('qrisTimer');
+  const m = Math.floor(qrisLeft / 60);
+  const s = qrisLeft % 60;
+  el.textContent = `⏱ Sisa waktu ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('ok', qrisLeft > 60);
+}
+
+function expireQris(){
+  if (!pendingOrder) return;
+  pendingOrder.status = 'Kedaluwarsa';
+  orders.unshift(pendingOrder);
+  saveOrders();
+  pendingOrder = null;
+  cart = {};
+  updateCartUI();
+  closeModal('modalQris');
+  toast('Waktu pembayaran habis. Pesanan dibatalkan.');
+  renderOrders();
+}
+
+function confirmQris(){
+  if (!pendingOrder) return;
+  clearInterval(qrisInterval);
+  pendingOrder.status = 'Dibayar';
+  pendingOrder.paidAt = new Date().toISOString();
+  orders.unshift(pendingOrder);
+  saveOrders();
+  const order = pendingOrder;
+  pendingOrder = null;
+  cart = {};
+  updateCartUI();
+  closeModal('modalQris');
+  showSuccess(order, false);
+}
+
+/* Fallback QR generator (jika library CDN gagal dimuat) */
+function drawFallbackQR(container, text){
+  const size = 210, cells = 25, cell = size / cells;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,size,size);
+
+  let h = 0;
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
+  const rand = () => { h ^= h << 13; h >>>= 0; h ^= h >> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+
+  ctx.fillStyle = '#241610';
+  for (let y = 0; y < cells; y++){
+    for (let x = 0; x < cells; x++){
+      const inFinder = (x < 8 && y < 8) || (x > cells-9 && y < 8) || (x < 8 && y > cells-9);
+      if (inFinder) continue;
+      if (rand() > 0.55) ctx.fillRect(x*cell, y*cell, cell, cell);
+    }
+  }
+  [[0,0],[cells-7,0],[0,cells-7]].forEach(([fx,fy]) => {
+    ctx.fillStyle = '#241610'; ctx.fillRect(fx*cell, fy*cell, 7*cell, 7*cell);
+    ctx.fillStyle = '#fff';    ctx.fillRect((fx+1)*cell, (fy+1)*cell, 5*cell, 5*cell);
+    ctx.fillStyle = '#241610'; ctx.fillRect((fx+2)*cell, (fy+2)*cell, 3*cell, 3*cell);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(canvas);
+}
+
+/* =========================================================
+   SUKSES
+   ========================================================= */
+function showSuccess(order, isCash){
+  const icon  = $('succIcon');
+  const title = $('succTitle');
+  const msg   = $('succMsg');
+
+  if (isCash){
+    icon.className = 'check wait';
+    icon.textContent = '💵';
+    title.textContent = 'Pesanan Tercatat!';
+    msg.textContent = 'Silakan bayar tunai di kasir. Tunjukkan nomor pesanan berikut.';
+  } else {
+    icon.className = 'check';
+    icon.textContent = '✓';
+    title.textContent = 'Pembayaran Berhasil!';
+    msg.textContent = 'QRIS terverifikasi. Pesananmu segera kami siapkan.';
+  }
+
+  const itemsHtml = order.items.map(i =>
+    `<div class="r-row"><span>${i.qty}× ${i.name}</span><b>${rupiah(i.subtotal)}</b></div>`
+  ).join('');
+
+  $('succReceipt').innerHTML = `
+    <div class="r-row"><span>No. Pesanan</span><b>${order.id}</b></div>
+    <div class="r-row"><span>Nama</span><b>${order.customer.name}</b></div>
+    <div class="r-row"><span>Tipe</span><b>${order.customer.type}</b></div>
+    <hr>
+    ${itemsHtml}
+    <hr>
+    <div class="r-row"><span>Metode Bayar</span><b>${order.payment}</b></div>
+    <div class="r-row"><span>Status</span><b>${order.status}</b></div>
+    <div class="r-row" style="font-size:1rem;padding-top:6px">
+      <span><b>Total</b></span><b>${rupiah(order.total)}</b>
+    </div>`;
+
+  openModal('modalSuccess');
+  renderOrders();
+}
+
+/* =========================================================
+   RIWAYAT / DATA PESANAN
+   ========================================================= */
+function saveOrders(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(orders)); } catch(e){}
+}
+function loadOrders(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    orders = raw ? JSON.parse(raw) : [];
+  } catch(e){ orders = []; }
+}
+
+function statusClass(status){
+  if (status === 'Dibayar' || status === 'Lunas') return 'paid';
+  if (status === 'Kedaluwarsa' || status === 'Dibatalkan') return 'cancel';
+  return 'pending';
+}
+
+function renderOrders(){
+  const body = $('ordersBody');
+  const foot = $('ordersFoot');
+
+  const totalAll  = orders.reduce((s,o) => s + (o.status === 'Kedaluwarsa' ? 0 : o.total), 0);
+  const totalQris = orders.filter(o => o.payment === 'QRIS' && o.status === 'Dibayar')
+                          .reduce((s,o) => s + o.total, 0);
+  const totalCash = orders.filter(o => o.payment === 'Tunai' && o.status !== 'Kedaluwarsa')
+                          .reduce((s,o) => s + o.total, 0);
+
+  const stats = `
+    <div class="stats">
+      <div class="stat"><small>Total Transaksi</small><strong>${rupiah(totalAll)}</strong></div>
+      <div class="stat"><small>QRIS</small><strong>${rupiah(totalQris)}</strong></div>
+      <div class="stat"><small>Tunai</small><strong>${rupiah(totalCash)}</strong></div>
+    </div>`;
+
+  if (!orders.length){
+    body.innerHTML = stats + `
+      <div class="empty">
+        <span class="ico">📋</span>
+        <p>Belum ada pesanan.<br>Yuk buat pesanan pertamamu!</p>
+      </div>`;
+    foot.innerHTML = `<button class="btn-secondary" data-close="modalOrders">Tutup</button>`;
+    return;
+  }
+
+  body.innerHTML = stats + orders.map(o => {
+    const d = new Date(o.date);
+    const dateStr = d.toLocaleString('id-ID', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const itemsStr = o.items.map(i => `${i.qty}× ${i.name}`).join(', ');
+    const isCashUnpaid = o.payment === 'Tunai' && o.status === 'Belum Dibayar';
+
+    return `
+      <div class="order">
+        <div class="order-head">
+          <div>
+            <h4>${o.id}</h4>
+            <small>${dateStr} · ${o.customer.name}</small>
+          </div>
+          <span class="status ${statusClass(o.status)}">${o.status}</span>
+        </div>
+        <div class="order-items">${itemsStr}</div>
+        <div class="order-foot">
+          <span>
+            <b>${rupiah(o.total)}</b>
+            <span class="tag">${o.payment}</span>
+            <span class="tag">${o.customer.type.split(' ')[0]}</span>
+          </span>
+          ${isCashUnpaid
+            ? `<button class="btn-mini" data-lunas="${o.id}">Tandai Lunas</button>`
+            : `<span style="font-size:.73rem;color:var(--brown-400)">${o.payment === 'Tunai' ? 'Tunai' : 'QRIS'} ✓</span>`}
+        </div>
+      </div>`;
+  }).join('');
+
+  foot.innerHTML = `
+    <button class="btn-secondary" id="btnClearHistory">🗑 Hapus Semua Riwayat</button>
+    <button class="btn-secondary" data-close="modalOrders">Tutup</button>`;
+}
+
+function markPaid(orderId){
+  const o = orders.find(x => x.id === orderId);
+  if (!o) return;
+  o.status = 'Lunas';
+  o.paidAt = new Date().toISOString();
+  saveOrders();
+  renderOrders();
+  toast('Pembayaran tunai tercatat lunas ✓');
+}
+
+/* =========================================================
+   EVENT LISTENERS
+   ========================================================= */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-add],[data-plus],[data-minus],[data-close],[data-cat],[data-pay],[data-lunas]');
+  if (!t) return;
+
+  if (t.dataset.add)   addToCart(t.dataset.add);
+  if (t.dataset.plus)  changeQty(t.dataset.plus, +1);
+  if (t.dataset.minus) changeQty(t.dataset.minus, -1);
+  if (t.dataset.close) closeModal(t.dataset.close);
+  if (t.dataset.lunas) markPaid(t.dataset.lunas);
+
+  if (t.dataset.cat){
+    activeFilter = t.dataset.cat;
+    renderFilters();
+    renderProducts();
+  }
+  if (t.dataset.pay) selectPayment(t.dataset.pay);
+});
+
+$('btnCart').addEventListener('click', () => { renderCart(); openModal('modalCart'); });
+$('btnOrders').addEventListener('click', () => { renderOrders(); openModal('modalOrders'); });
+$('btnSeeOrders').addEventListener('click', () => {
+  closeModal('modalSuccess');
+  renderOrders();
+  openModal('modalOrders');
+});
+
+// checkout button (delegated karena dibuat dinamis)
+document.addEventListener('click', e => {
+  if (e.target.id === 'btnCheckout') openCheckout();
+  if (e.target.id === 'btnConfirmQris') confirmQris();
+  if (e.target.id === 'btnClearHistory'){
+    if (confirm('Hapus semua riwayat pesanan?')){
+      orders = [];
+      saveOrders();
+      renderOrders();
+      toast('Riwayat dihapus');
+    }
+  }
+});
+
+$('btnPay').addEventListener('click', processPayment);
+
+// tutup modal lewat klik backdrop
+document.querySelectorAll('.backdrop').forEach(bd => {
+  bd.addEventListener('click', e => {
+    if (e.target === bd){
+      if (bd.id === 'modalQris' && pendingOrder){
+        // simpan sebagai menunggu pembayaran
+        pendingOrder.status = 'Menunggu Pembayaran';
+        orders.unshift(pendingOrder);
+        saveOrders();
+        pendingOrder = null;
+        clearInterval(qrisInterval);
+        cart = {};
+        updateCartUI();
+        renderOrders();
+        toast('Pesanan disimpan, selesaikan pembayaran di kasir');
+      }
+      closeModal(bd.id);
+    }
+  });
+});
+
+// Enter key pada form
+$('checkoutForm').addEventListener('submit', e => {
+  e.preventDefault();
+  processPayment();
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+loadOrders();
+renderFilters();
+renderProducts();
+updateCartUI();
+selectPayment('qris');
+$('cartBadge').style.display = 'none';
+</script>
+</body>
+</html>
